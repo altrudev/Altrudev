@@ -110,6 +110,16 @@ class HarnessTests(unittest.TestCase):
         weakened = scenario(forbidden_recipients=("recipient-R",), mutation="disable_release_gate")
         self.assertEqual(self.runner.run(weakened).status, "passed")
 
+    def test_forbidden_recipient_remains_refused_with_missing_execution(self):
+        inputs = {**scenario().inputs, "missing_execution_evidence": True}
+        result = self.runner.run(scenario(inputs=inputs, forbidden_recipients=("recipient-R",)))
+        self.assertEqual(result.status, "refused")
+        self.assertEqual(result.boundary_outcomes["execution"], "unavailable")
+        self.assertEqual(result.boundary_outcomes["release/disclosure"], "contradicted")
+        permitted = self.runner.run(scenario(inputs=inputs))
+        self.assertEqual(permitted.status, "unknown")
+        self.assertEqual(permitted.boundary_outcomes["release/disclosure"], "unavailable")
+
     def test_semantic_version_admission(self):
         for version in ["0.9.9", "1.0.0-rc.1", "1.0.0-alpha", "garbage", "01.0.0", "1.0", "1.0.0-01", 12, None]:
             with self.subTest(version=version):

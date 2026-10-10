@@ -162,7 +162,7 @@ class DeterministicWorkflowAdapter:
             Outcome.ESTABLISHED
             if release_ok
             else Outcome.UNAVAILABLE
-            if exec_main == Outcome.UNAVAILABLE
+            if exec_main == Outcome.UNAVAILABLE and allowed_recipient
             else Outcome.CONTRADICTED
         )
         emit(Boundary.RELEASE, release_outcome, "release-check", "response-binding")
