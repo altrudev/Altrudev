@@ -120,6 +120,17 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(permitted.status, "unknown")
         self.assertEqual(permitted.boundary_outcomes["release/disclosure"], "unavailable")
 
+    def test_adversarial_boolean_type_confusion_fails_closed(self):
+        controls = ("dispatch", "timeout_after_dispatch", "revoked_before_use", "replay",
+                    "missing_execution_evidence", "retry_lineage", "response_bound", "bypass_egress")
+        for control in controls:
+            for malformed in ("false", "true", 0, 1, None, [], {}):
+                with self.subTest(control=control, malformed=malformed):
+                    bad = scenario(inputs={**scenario().inputs, control: malformed})
+                    with self.assertRaisesRegex(ValueError, "must be a Boolean"):
+                        self.runner.run(bad)
+        self.assertEqual(self.runner.run(scenario()).status, "passed")
+
     def test_semantic_version_admission(self):
         for version in ["0.9.9", "1.0.0-rc.1", "1.0.0-alpha", "garbage", "01.0.0", "1.0", "1.0.0-01", 12, None]:
             with self.subTest(version=version):

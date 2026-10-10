@@ -32,6 +32,12 @@ class DeterministicWorkflowAdapter:
 
     def run(self, scenario: Scenario) -> AdapterResult:
         i = scenario.inputs
+        if not isinstance(i, dict):
+            raise ValueError("scenario inputs must be a mapping")
+        for name in ("dispatch", "timeout_after_dispatch", "revoked_before_use", "replay",
+                     "missing_execution_evidence", "retry_lineage", "response_bound", "bypass_egress"):
+            if name in i and type(i[name]) is not bool:
+                raise ValueError(f"{name} must be a Boolean")
         obs: list[Observation] = []
 
         def emit(boundary, outcome, source, caused_by=None, lineage="main", detail=None):
